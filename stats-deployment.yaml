@@ -1,0 +1,40 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: stats-deployment
+  labels:
+    app: stats
+spec:
+  selector:
+    matchLabels:
+      app: stats
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: stats
+    spec:
+      containers:
+      - name: stats
+        image: sougata26/nodejs-stats:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+---
+# https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: stats-service
+  labels:
+    app: stats
+    service: stats-service
+  annotations:
+    plugins.konghq.com: request-id, response-transformer, api-key-auth
+spec:
+  selector:
+    app: stats
+  ports:
+  - port: 3000
+    name: http
+  type: ClusterIP

@@ -1,0 +1,7 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: consumer-team-x
+username: team-X
+credentials:
+ - kong-api-key

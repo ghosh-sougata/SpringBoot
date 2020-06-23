@@ -1,0 +1,46 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: company-deployment
+  labels:
+    app: company
+spec:
+  selector:
+    matchLabels:
+      app: company
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: company
+    spec:
+      containers:
+      - name: company
+        image: sougata26/spring-company:3.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        env:
+        - name: LOCATION_SVC_URL
+          value: "http://location-service.default.svc.cluster.local:8082/location"
+          #value: "http://location-service:8082/location" 
+
+---
+# https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: company-service
+  labels:
+    app: company
+    service: company-service
+  annotations:
+     plugins.konghq.com: request-id, response-transformer, api-key-auth
+     #plugins.konghq.com: request-id, response-transformer
+spec:
+  selector:
+    app: company
+  ports:
+  - port: 8081
+    name: http
+  type: ClusterIP

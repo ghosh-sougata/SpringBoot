@@ -1,0 +1,24 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: request-id
+config:
+  header_name: my-request-id
+  echo_downstream: true
+plugin: correlation-id
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: add-response-header
+config:
+  add:
+    headers:
+    - "demo: injected-by-kong"
+plugin: response-transformer
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: api-key-auth
+plugin: key-auth
