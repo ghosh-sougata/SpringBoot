@@ -8,7 +8,7 @@ spec:
   selector:
     matchLabels:
       app: company
-  replicas: 1 # tells deployment to run 2 pods matching the template
+  replicas: 3 # tells deployment to run 2 pods matching the template
   template:
     metadata:
       labels:
@@ -22,8 +22,8 @@ spec:
         - containerPort: 8081
         env:
         - name: LOCATION_SVC_URL
-          value: "http://location-service.default.svc.cluster.local:8082/location"
-          #value: "http://location-service:8082/location" 
+          #value: "http://location-service.default.svc.cluster.local:8082/location"
+          value: "http://location-service:8082/location" 
 
 ---
 # https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
