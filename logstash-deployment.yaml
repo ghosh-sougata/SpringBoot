@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-configmap
+  namespace: kube-system
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    filter {
+      grok {
+          match => { "message" => "%{COMBINEDAPACHELOG}" }
+      }
+      date {
+        match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+      }
+      geoip {
+          source => "clientip"
+        }
+      }
+      output {
+        elasticsearch {
+          #hosts => ["elasticsearch-logging:9200"]
+          #hosts => ["https://10.96.240.152:9200"]
+          #hosts => ["quickstart-es-http:9200"]
+          #hosts => ["quiquickstart-es-http.default.svc.cluster.local:9200"]
+          hosts => ["https://elastic:Z2J4WYBlY0ItgC93206nR8X6@quickstart-es-http.default.svc.cluster.local:9200"]
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-deployment
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:7.8.0
+        ports:
+        - containerPort: 5044
+        volumeMounts:
+          - name: config-volume
+            mountPath: /usr/share/logstash/config
+          - name: logstash-pipeline-volume
+            mountPath: /usr/share/logstash/pipeline
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: logstash.yml
+              path: logstash.yml
+      - name: logstash-pipeline-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: logstash.conf
+              path: logstash.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: logstash-service
+  namespace: kube-system
+spec:
+  selector:
+    app: logstash
+  ports:
+  - protocol: TCP
+    port: 5044
+    targetPort: 5044

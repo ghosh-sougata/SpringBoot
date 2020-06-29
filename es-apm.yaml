@@ -1,0 +1,12 @@
+apiVersion: apm.k8s.elastic.co/v1
+kind: ApmServer
+metadata:
+  name: quickstart
+spec:
+  version: 7.8.0
+  count: 1
+  elasticsearchRef:
+    name: "quickstart-es-http"
+  # this allows ECK to configure automatically the Kibana endpoint as described in https://www.elastic.co/guide/en/apm/server/current/setup-kibana-endpoint.html
+  kibanaRef:
+    name: "quickstart-kb-http"

@@ -6,7 +6,7 @@ metadata:
   labels:
     k8s-app: fluentd-logging
     version: v1
-    kubernetes.io/cluster-service: "true"
+    #kubernetes.io/cluster-service: "true"
 spec:
   selector:
     matchLabels:
@@ -17,7 +17,7 @@ spec:
       labels:
         k8s-app: fluentd-logging
         version: v1
-        kubernetes.io/cluster-service: "true"
+        #kubernetes.io/cluster-service: "true"
     spec:
       serviceAccount: fluentd
       serviceAccountName: fluentd
@@ -29,17 +29,30 @@ spec:
         #image: fluent/fluentd-kubernetes-daemonset:v1.3-debian-elasticsearch
         #image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
         image: quay.io/fluent/fluentd-kubernetes-daemonset
+        #image: fluent/fluentd-kubernetes-daemonset:elasticsearch
         env:
           - name:  FLUENT_ELASTICSEARCH_HOST
-            #value: "elasticsearch.logging"
-            #value: 10.96.240.152
-            value: quickstart-es-http.default.svc.cluster.local
+            value: "elasticsearch.logging"
+            #value: "elastic-operator-0"
+            #value: "10.96.240.152"
+            #value: "quickstart-es-http.default.svc.cluster.local"
+            #value: "quickstart-es-http"
           - name:  FLUENT_ELASTICSEARCH_PORT
             value: "9200"
           - name: FLUENT_ELASTICSEARCH_SCHEME
             value: "http"
+          - name: FLUENT_ELASTICSEARCH_SSL_VERIFY
+            value: "true"
+          - name: FLUENT_ELASTICSEARCH_SSL_VERSION
+            value: "TLSv1_2"
           - name: FLUENT_UID
             value: "0"
+          - name: FLUENT_ELASTICSEARCH_USER
+            value: "elastic"
+          - name: FLUENT_ELASTICSEARCH_PASSWORD
+            value: "Z2J4WYBlY0ItgC93206nR8X6"
+          - name: FLUENTD_SYSTEMD_CONF
+            value: disable    
         resources:
           limits:
             memory: 200Mi
