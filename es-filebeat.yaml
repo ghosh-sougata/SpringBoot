@@ -29,6 +29,15 @@ data:
             type: container
             paths:
               - /var/log/containers/*${data.kubernetes.container.id}.log
+    
+    logging.metrics.enabled: false
+    logging.level: info
+    logging.to_files: true
+    logging.files:
+      path: /var/log/filebeat
+      name: filebeat
+      keepfiles: 7
+      permissions: 0644
 
     processors:
       - add_cloud_metadata:
@@ -41,15 +50,27 @@ data:
       hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
       protocol: https
       ssl.enabled: true
-      ssl.verification_mode: none  
+      ssl.verification_mode: "none"  
       username: ${ELASTICSEARCH_USERNAME}
       password: ${ELASTICSEARCH_PASSWORD}
       ssl.certificate_authorities:
       - /k8s-elastic-fs/tls.crt 
+      #- /k8s-elastic-fs/kibana_tls.crt
+      #index: "api-access-%{[fields.log_type]}-%{[agent.version]}-%{+yyyy.MM.dd}"
+    #setup.template:
+     # name: 'api-access'
+      #pattern: 'api-access-*'
+      #enabled: false    
+    setup.dashboards.enabled: true
+    setup.template.enabled: true 
     setup.kibana:
-      host: "10.96.65.174:5601"
-      username: elastic
-      password: Z2J4WYBlY0ItgC93206nR8X6 
+      #host: "10.96.65.174:5601"
+      host: "https://quickstart-kb-http:5601"
+      #username: elastic
+      #password: Z2J4WYBlY0ItgC93206nR8X6 
+      ssl.verification_mode : "none"
+#      ssl.certificate_authorities:
+ #     - /k8s-elastic-fs/kibana_tls.crt
 
 ---
 apiVersion: apps/v1
@@ -81,8 +102,9 @@ spec:
         ]
         env:
         - name: ELASTICSEARCH_HOST
-          #value: quickstart-es-http.default.svc.cluster.local
-          value: 10.96.240.152
+          #value: quickstart-es-http.default.es.local
+          #value: 10.96.240.152
+          value: quickstart-es-http
         - name: ELASTICSEARCH_PORT
           value: "9200"
         - name: ELASTICSEARCH_USERNAME
@@ -147,6 +169,9 @@ spec:
       - name: es-certs
         secret:
           secretName: quickstart-es-http-certs-public
+      - name: kb-certs
+        secret:
+          secretName: quickstart-kb-http-certs-public
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
