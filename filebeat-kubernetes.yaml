@@ -47,6 +47,15 @@ data:
       ssl.certificate_authorities:
       - /k8s-elastic-fs/tls.crt
 
+    setup.dashboards.enabled: true
+    setup.template.enabled: true
+
+    setup.kibana:
+      host: "https://quickstart-kb-http:5601"
+      ssl.verification_mode : "none"
+      #ssl.certificate_authorities:
+      #- /k8s-elastic-fs/kibana_tls.crt
+
     logging.metrics.enabled: false 
 ---
 apiVersion: apps/v1
@@ -84,7 +93,7 @@ spec:
         - name: ELASTICSEARCH_USERNAME
           value: elastic
         - name: ELASTICSEARCH_PASSWORD
-          value: Z2J4WYBlY0ItgC93206nR8X6
+          value: hGCOe6c72n2q28b0DTB51pp2 
         - name: NODE_NAME
           valueFrom:
             fieldRef:
@@ -124,6 +133,10 @@ spec:
           mountPath: /var/run/docker.sock
           readOnly: true
           #user: root
+        #- name: kb-certs
+         # mountPath: /k8s-elastic-fs/tls.crt
+          #readOnly: true
+          #subPath: tls.crt    
                 
       volumes:
       - name: config
@@ -150,6 +163,9 @@ spec:
       - name: es-certs
         secret:
           secretName: quickstart-es-http-certs-public
+      - name: kb-certs
+        secret:
+          secretName: quickstart-kb-http-certs-public 
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
