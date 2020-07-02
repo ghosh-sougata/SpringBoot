@@ -12,6 +12,7 @@ data:
     - type: container
       paths: 
         - '/var/lib/docker/containers/*/*.log'
+      #include_lines: ['INFO', 'ERR', 'WARN']
     filebeat.autodiscover:
       providers:
         - type: kubernetes
@@ -23,8 +24,18 @@ data:
               - /var/log/containers/*${data.kubernetes.container.id}.log
 
     processors:
+    - add_docker_metadata:
+        host: "unix:///var/run/docker.sock"
+
+    - decode_json_fields:
+        fields: ["message"]
+        target: "json"
+        overwrite_keys: true
+
+    processors:
       - add_cloud_metadata:
       - add_host_metadata:
+      - add_docker_metadata:
 
     output.elasticsearch:
       hosts: ['https://${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
@@ -109,6 +120,11 @@ spec:
           mountPath: /k8s-elastic-fs/tls.crt
           readOnly: true
           subPath: tls.crt
+        - name: dockersock
+          mountPath: /var/run/docker.sock
+          readOnly: true
+          #user: root
+                
       volumes:
       - name: config
         configMap:
@@ -122,6 +138,9 @@ spec:
         hostPath:
           path: /var/log
           #path: /k8s-elastic-fs/filebeat/log
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock
       # data folder stores a registry of read status for all files, so we don't send everything again on a Filebeat pod restart
       - name: data
         hostPath:
