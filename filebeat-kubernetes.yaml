@@ -37,24 +37,31 @@ data:
       - add_host_metadata:
       - add_docker_metadata:
 
-    output.elasticsearch:
-      hosts: ['https://${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
-      username: ${ELASTICSEARCH_USERNAME}
-      password: ${ELASTICSEARCH_PASSWORD}
-      protocol: https
-      ssl.enabled: true
-      ssl.verification_mode: "none"
-      ssl.certificate_authorities:
-      - /k8s-elastic-fs/tls.crt
+    #output.elasticsearch:
+     # hosts: ['https://${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+      #username: ${ELASTICSEARCH_USERNAME}
+      #password: ${ELASTICSEARCH_PASSWORD}
+      #protocol: https
+      #ssl.enabled: true
+      #ssl.verification_mode: "none"
+      #ssl.certificate_authorities:
+      #- /k8s-elastic-fs/tls.crt
+
+    output.logstash:
+      hosts: ["logstash-service:5044"]
 
     setup.dashboards.enabled: true
     setup.template.enabled: true
 
     setup.kibana:
       host: "https://quickstart-kb-http:5601"
+      username: ${ELASTICSEARCH_USERNAME}
+      password: ${ELASTICSEARCH_PASSWORD}
+      #protocol: https
+      ssl.enabled: true
       ssl.verification_mode : "none"
-      #ssl.certificate_authorities:
-      #- /k8s-elastic-fs/kibana_tls.crt
+      ssl.certificate_authorities:
+      - /k8s-elastic-fs/tls.crt
 
     logging.metrics.enabled: false 
 ---
