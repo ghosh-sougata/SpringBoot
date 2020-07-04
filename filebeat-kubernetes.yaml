@@ -13,6 +13,12 @@ data:
       paths: 
         - '/var/lib/docker/containers/*/*.log'
       #include_lines: ['INFO', 'ERR', 'WARN']
+      #multiline.pattern: '^\[0-9]{4}-[0-9]{2}-[0-9]{2}'
+      multiline.pattern: '.*'
+      multiline.negate: false
+      multiline.match: before
+      multiline.max_lines: 10
+
     filebeat.autodiscover:
       providers:
         - type: kubernetes
