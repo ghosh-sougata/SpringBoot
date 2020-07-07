@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: fluentd
-  namespace: kube-system
+  namespace: default
   labels:
     k8s-app: fluentd-logging
     version: v1
@@ -32,17 +32,17 @@ spec:
         #image: fluent/fluentd-kubernetes-daemonset:elasticsearch
         env:
           - name:  FLUENT_ELASTICSEARCH_HOST
-            value: "elasticsearch.logging"
+            #value: "elasticsearch.logging"
             #value: "elastic-operator-0"
             #value: "10.96.240.152"
             #value: "quickstart-es-http.default.svc.cluster.local"
-            #value: "quickstart-es-http"
+            value: "quickstart-es-http"
           - name:  FLUENT_ELASTICSEARCH_PORT
             value: "9200"
           - name: FLUENT_ELASTICSEARCH_SCHEME
-            value: "http"
+            value: "https"
           - name: FLUENT_ELASTICSEARCH_SSL_VERIFY
-            value: "true"
+            value: "false"
           - name: FLUENT_ELASTICSEARCH_SSL_VERSION
             value: "TLSv1_2"
           - name: FLUENT_UID
@@ -50,9 +50,11 @@ spec:
           - name: FLUENT_ELASTICSEARCH_USER
             value: "elastic"
           - name: FLUENT_ELASTICSEARCH_PASSWORD
-            value: "Z2J4WYBlY0ItgC93206nR8X6"
+            value: "hGCOe6c72n2q28b0DTB51pp2"
           - name: FLUENTD_SYSTEMD_CONF
             value: disable    
+          - name: FLUENT_ELASTICSEARCH_CA_FILE
+            value: "/k8s-elastic-fs/tls.crt"    
         resources:
           limits:
             memory: 200Mi
@@ -65,6 +67,11 @@ spec:
         - name: varlibdockercontainers
           mountPath: /var/lib/docker/containers
           readOnly: true
+        - name: es-certs
+          mountPath: /k8s-elastic-fs/tls.crt
+          readOnly: true
+          subPath: tls.crt
+
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlog
@@ -73,3 +80,8 @@ spec:
       - name: varlibdockercontainers
         hostPath:
           path: /var/lib/docker/containers
+      - name: es-certs 
+        #hostPath:
+         # path: /k8s-elastic-fs/tls.crt
+        secret:
+          secretName: quickstart-es-http-certs-public
